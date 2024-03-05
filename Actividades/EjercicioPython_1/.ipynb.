@@ -2,3 +2,30 @@
 # Juan Carlos Serrano Acosta
 # 2001047 N1
 
+# 1. Desarrolla un algoritmo que le pida al usuario por su nombre y que lo salude con su nombre, excepto si se llama “Ana”, “Juan”, y “Pedro”.
+nombre = input("Por favor, introduce tu nombre: ")
+    
+if nombre.lower() in ["ana", "juan", "pedro"]:
+  print("¡Buen dia! Encantado de conocerte.")
+else:
+  print("¡Buen dia! Encantado de conocerte.")
+  print("Mi estimado o estimada", nombre + "! Bienvenido.")
+
+# 2. Desarrolla un algoritmo que por medio de una función, le pida al usuario una lista de N elementos y como resultado invierta el sentido de la lista. 
+def invertir_lista():
+
+    n = int(input("Ingrese la cantidad de elementos de la lista: "))
+    
+
+    lista = []
+    for i in range(n):
+        elemento = input(f"Ingrese el elemento {i+1}: ")
+        lista.append(elemento)
+    
+    lista_invertida = lista[::-1]
+    
+    return lista_invertida
+
+lista_invertida = invertir_lista()
+print("Lista invertida:", lista_invertida)
+
