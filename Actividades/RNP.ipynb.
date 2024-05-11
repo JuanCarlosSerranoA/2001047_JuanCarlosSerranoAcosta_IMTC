@@ -1,0 +1,34 @@
+# Cargar de Librerias
+import tensorflow as tf
+from tensorflow.keras.datasets import mnist
+
+# Cargar el conjunto de datos
+(train_data, train_labels), (test_data, test_labels) = mnist.load_data()
+
+train_data, test_data = train_data / 255.0, test_data / 255.0
+
+# Preprocesamiento de datos
+model = tf.keras.models.Sequential([
+    tf.keras.layers.Flatten(input_shape=(28, 28)),  
+    tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.Dense(64, activation='relu'),   
+    tf.keras.layers.Dense(10, activation='softmax')  
+])
+
+# Selección y entrenamiento del modelo
+model.compile(optimizer='adam',
+              loss='sparse_categorical_crossentropy',  
+              metrics=['accuracy'])  
+
+model.fit(train_data, train_labels, epochs=5) 
+
+# Prueba de modelo
+test_loss, test_accuracy = model.evaluate(test_data, test_labels)
+print("Exactitud de predicción en el conjunto de prueba:", test_accuracy)
+
+# 5 predicciones
+for i in range(5):
+    prediction = model.predict(test_data[i:i+1]) 
+    predicted_label = tf.argmax(prediction, axis=1).numpy()[0]
+    true_label = test_labels[i]
+    print("Predicción:", predicted_label, "Valor real:", true_label)
