@@ -1,1 +1,56 @@
+# Actividad 6: Redes Neuronales
+# Juan Carlos Serrano Acosta
+# 2001047 N1
 
+    # 1. Cargar librerías.
+import tensorflow as tf
+from tensorflow.keras import datasets, layers, models
+import matplotlib.pyplot as plt
+import numpy as np
+
+    # 2. Cargar datos.
+# datos MNIST
+(train_data, train_labels), (test_data, test_labels) = datasets.mnist.load_data()
+
+    # 3. Preprocesamiento de datos. 
+# Normalizar los datos a valores entre 0 y 1
+train_data = train_data / 255.0
+test_data = test_data / 255.0
+# Redimensionar los datos para que tengan un solo canal (grayscale)
+train_data = train_data.reshape((train_data.shape[0], 28, 28, 1))
+test_data = test_data.reshape((test_data.shape[0], 28, 28, 1))
+
+model = models.Sequential([
+    layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)),
+    layers.MaxPooling2D((2, 2)),
+    layers.Conv2D(64, (3, 3), activation='relu'),
+    layers.MaxPooling2D((2, 2)),
+    layers.Conv2D(64, (3, 3), activation='relu'),
+    layers.Flatten(),
+    layers.Dense(64, activation='relu'),
+    layers.Dense(10, activation='softmax')
+])
+
+# 4. Selección y entrenamiento del modelo. 
+model.summary()
+
+
+model.compile(optimizer='adam',
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+
+
+history = model.fit(train_data, train_labels, epochs=5, 
+                    validation_data=(test_data, test_labels))
+
+
+test_loss, test_acc = model.evaluate(test_data, test_labels, verbose=2)
+print(f'\nTest accuracy: {test_acc}')
+
+# 5. Prueba de modelo. 
+predictions = model.predict(test_data)
+for i in range(5):
+    plt.grid(False)
+    plt.imshow(test_data[i].reshape(28, 28), cmap=plt.cm.binary)
+    plt.title(f'Predicted: {np.argmax(predictions[i])}, Actual: {test_labels[i]}')
+    plt.show()
