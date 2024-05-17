@@ -1,3 +1,7 @@
+# Actividad 5: Uso del Software para búsqueda
+# Juan Carlos Serrano Acosta
+# 2001047 N1
+
 # Cargar de Librerias
 import tensorflow as tf
 from tensorflow.keras.datasets import mnist
