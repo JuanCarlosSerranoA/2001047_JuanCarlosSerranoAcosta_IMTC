@@ -1,0 +1,105 @@
+'''
+Angie Sofia Hernández Tristán	          2008178
+Juan Carlos Serrano Acosta	            2001047
+Jorge Fabián Moreno Sarmiento 	        2015221
+Mauricio Armando Villatoro Alvarado     2128154
+Jesús Sauceda Rivera 	                  2014186
+Hora clase: N1, LMV
+'''
+#1. Instalar librerias
+!pip install kaggle
+!pip install tensorflow
+!kaggle datasets download -d gpiosenka/cards-image-datasetclassification
+!unzip /content/cards-image-datasetclassification.zip -d /content/
+#Verificar la estructura del directorio y ajustar su nombre
+print("Contenido de /content/:")
+print(os.listdir('/content/'))
+import os
+print("Contenido de /content/:")
+print(os.listdir('/content/'))
+train_dir = '/content/train'
+valid_dir = '/content/valid'
+#3. Preprocesamiento de las imagenes
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+import os
+import matplotlib.pyplot as plt
+batch_size = 32
+img_height = 150
+img_width = 150
+train_datagen = ImageDataGenerator(
+    rescale=1./255,
+    validation_split=0.2  # 20% de los datos se utilizarán para la validación
+)
+
+train_generator = train_datagen.flow_from_directory(
+    train_dir,
+    target_size=(img_height, img_width),
+    batch_size=batch_size,
+    class_mode='categorical',
+    subset='training'  # Usar este generador para el conjunto de entrenamiento
+)
+
+validation_generator = train_datagen.flow_from_directory(
+    valid_dir,
+    target_size=(img_height, img_width),
+    batch_size=batch_size,
+    class_mode='categorical',
+    subset='validation'  # Usar este generador para el conjunto de validación
+)
+#4. Definir y entrenar la CNN
+model = tf.keras.Sequential([
+    tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(img_height, img_width, 3)),
+    tf.keras.layers.MaxPooling2D((2, 2)),
+    tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
+    tf.keras.layers.MaxPooling2D((2, 2)),
+    tf.keras.layers.Conv2D(128, (3, 3), activation='relu'),
+    tf.keras.layers.MaxPooling2D((2, 2)),
+    tf.keras.layers.Flatten(),
+    tf.keras.layers.Dense(512, activation='relu'),
+    tf.keras.layers.Dense(len(train_generator.class_indices), activation='softmax')
+])
+
+model.compile(optimizer='adam',
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+history = model.fit(
+    train_generator,
+    epochs=10,
+    validation_data=validation_generator
+)
+#5. 5 predicciondes y gráfica
+import numpy as np
+from tensorflow.keras.preprocessing import image
+
+def predict_and_show(image_path):
+    img = image.load_img(image_path, target_size=(img_height, img_width))
+    img_array = image.img_to_array(img) / 255.0
+    img_array = np.expand_dims(img_array, axis=0)
+    prediction = model.predict(img_array)
+    predicted_class = np.argmax(prediction, axis=1)
+
+    plt.imshow(img)
+    plt.title(f'Prediction: {list(train_generator.class_indices.keys())[predicted_class[0]]}')
+    plt.show()
+import random
+
+test_image_paths = []
+for class_dir in os.listdir(train_dir):
+    class_path = os.path.join(train_dir, class_dir)
+    if os.path.isdir(class_path):
+        test_image_paths.extend([os.path.join(class_path, img) for img in os.listdir(class_path)[:5]])
+
+for img_path in random.sample(test_image_paths, 5):
+    predict_and_show(img_path)
+acc = history.history['accuracy']
+val_acc = history.history['val_accuracy']
+epochs_range = range(10)
+
+plt.figure(figsize=(8, 8))
+plt.subplot(1, 1, 1)
+plt.plot(epochs_range, acc, label='Training Accuracy')
+plt.plot(epochs_range, val_acc, label='Validation Accuracy')
+plt.legend(loc='lower right')
+plt.title('Training and Validation Accuracy')
+plt.show()
